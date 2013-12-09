@@ -42,8 +42,8 @@ public class Transport {
 	 * 2- construct the TCP header 
 	 * 3- send each segment to lower layer
 	 * 
-	 * Received : data to be segmented
-	 * Send : segment to packeted ( to Network)
+	 * In : data to be segmented
+	 * Out : segment to packeted ( to Network)
 	 */
 	public List<ArrayList<byte[]>> serveLower(byte[] data ){
 
