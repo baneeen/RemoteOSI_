@@ -7,7 +7,7 @@
  *-- providing a service to Upper layer
  */
 
-package osi;
+
 public class MAC {
 
 }

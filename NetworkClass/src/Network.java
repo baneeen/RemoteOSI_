@@ -6,7 +6,7 @@
  *-- providing a service to lower layer
  *-- providing a service to Upper layer
  */
-package osi;
+
 public class Network {
 
 	
