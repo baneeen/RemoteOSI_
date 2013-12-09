@@ -1,0 +1,109 @@
+____________________________________________________________
+
+Report Information from ProQuest
+December 09 2013 16:43
+____________________________________________________________
+
+
+
+
+____________________________________________________________
+
+Table of contents
+
+1. COMPUTER NETWORKS
+
+____________________________________________________________
+
+Document 1 of 1
+
+COMPUTER NETWORKS
+
+Author: Brown, Russell
+
+Publication info: Broadcast Engineering , World edition 52.1 (Jan 2010): 46-49.
+
+http://search.proquest.com/docview/218638525?accountid=27313
+
+Abstract: The network switch monitors and records all traffic flowing through it looking for MAC addresses. When a computer needs to send data to another computer, it must first know its IP address and then its MAC address. To obtain the MAC address, it sends out an Address Resolution Protocol (ARP) request over the network to all devices asking for the MAC address of the owner of this particular IP address.
+
+Links: http://qk3bw7nm6m.search.serialssolutions.com/?ctx_ver=Z39.88-2004&amp;ctx_enc=info:ofi/enc:UTF-8&amp;rfr_id=info:sid/ProQ%3Aabitrade&amp;rft_val_fmt=info:ofi/fmt:kev:mtx:journal&amp;rft.genre=article&amp;rft.jtitle=Broadcast+Engineering&amp;rft.atitle=COMPUTER+NETWORKS&amp;rft.au=Brown%2C+Russell&amp;rft.aulast=Brown&amp;rft.aufirst=Russell&amp;rft.date=2010-01-01&amp;rft.volume=52&amp;rft.issue=1&amp;rft.spage=46&amp;rft.isbn=&amp;rft.btitle=&amp;rft.title=Broadcast+Engineering&amp;rft.issn=15295052
+
+http://qk3bw7nm6m.search.serialssolutions.com/?ctx_ver=Z39.88-2004&amp;ctx_enc=info:ofi/enc:UTF-8&amp;rfr_id=info:sid/ProQ%3Aabitrade&amp;rft_val_fmt=info:ofi/fmt:kev:mtx:journal&amp;rft.genre=article&amp;rft.jtitle=Broadcast+Engineering&amp;rft.atitle=COMPUTER+NETWORKS&amp;rft.au=Brown%2C+Russell&amp;rft.aulast=Brown&amp;rft.aufirst=Russell&amp;rft.date=2010-01-01&amp;rft.volume=52&amp;rft.issue=1&amp;rft.spage=46&amp;rft.isbn=&amp;rft.btitle=&amp;rft.title=Broadcast+Engineering&amp;rft.issn=15295052
+
+Full text: Headnote Knowledge of IP networks is necessary for operators in today's broadcast facilities.
+From the computers that control the automation system to the nonlinear editing systems that share storage, computer networks are everywhere in today's TV facilities. If you have been following the developments in the last several years, you will have seen the growing trend in the IP transmission of audio and video signals. The cable industry has already embraced IP transmission, and so has the new ATSC M/H mobile TV standard, which uses IP transmission to connect the encoders and embeds the IP packets into the transmission stream. Computer networks are the next evolution of DTV.
+IP network basics
+IP addressing works in two different ways, depending on whether the data is going to a device on a LAN or out to the Internet or a WAN. When data travels over a LAN, machine access control (MAC) addressing is used, but if the data travels out over a WAN, then IP addressing is primarily used.
+Most networks use both Dynamic Host Configuration Protocol (DHCP) and static IP addressing, but the address must be unique for each device on the network. With a mixture of static and DHCP, careful planning must be implemented to ensure addresses don't overlap.
+Subnet masks are an important part of IP addressing. Subnets break up a large network into smaller, more manageable networks. (See Figure 1.) A subnet mask is what commonly tells a network router what messages stay on the LAN and which need to be sent outside of the LAN. But on large networks, they can be used to direct traffic within a campus or large company or even separate the video/audio transmission network from the business network while still allowing necessary data to flow between the two.
+This is where routers/gateways come into play. A gateway separates and connects different networks. If an address falls outside the range of the subnet mask, the gateway would be accessed and the IP address would be searched for on the other side of the gateway.
+Because the subnet mask only acts on the IP address to direct the message, only certain IP address ranges can be used on private LANs. This keeps their addresses from being confused with addresses on the actual Internet or outside of the LAN. Some common ranges include 192.168.xxx.xxx, 172.16.xxx. xxx and 10.xxx.xxx.xxx. The latter has the most addresses available, but any of them will have more than enough addresses for your network.
+Switches and MAC
+Network switches are used to connect the various computers on a network. Switches direct data via a computer's MAC address. When data is sent out from a computer to the network switch, it carries with it the IP and MAC address of the sender and the intended recipient. The network switch looks at the MAC address and directs the data to the correct port of the switch. It does this by keeping a record of which port is connected to which MAC-addressed equipment. This record is kept in a content-addressable memory (CAM) table within the switch, which operates at very high speeds to expedite the movement of Ethernet frames through the switch.
+The network switch monitors and records all traffic flowing through it looking for MAC addresses. When a computer needs to send data to another computer, it must first know its IP address and then its MAC address. To obtain the MAC address, it sends out an Address Resolution Protocol (ARP) request over the network to all devices asking for the MAC address of the owner of this particular IP address. When the computer with that IP address responds, this data is stored on the requesting computer's ARP cache so it can use it again. The IP and MAC addresses of the requesting computer are also stored on all the computers on the network that received the request The MAC addresses for both computers, requesting and responding, are stored on the network switch.
+ARP
+An ARP request is the method devices use to find out another device's MAC address when only its IP is known. As a device receives an ARP or an answer to its own ARP request, it builds an ARP cache or memory of the IP addresses and associated MAC addresses. (See Figure 2 on page 42.) Network switches monitor all traffic and build their own CAM, so they know which MAC-addressed device is attached to which of its ports.
+Because network devices can be swapped out, and to keep the cache from being outdated, ARP caches are cleared on a regular basis, and new ARP requests must be sent out to obtain the MAC address again. On an Ethernet network, each IP packet sent has to have the IP and MAC address of its destination, and one data transfer may require anywhere from one to thousands of packets to send all the data. Once the first packet is addressed correctly, all the subsequent ones are addressed similarly using the ARP cache.
+TCP/IP
+TCP/IP is the most commonly used pair of protocols worldwide. Transmission Control Protocol (TCP) is software that resides on the computer; when a program needs to send data over the network, it hands that data over to the TCP. TCP is used throughout many Internet applications including browsers, email, File Transfer Protocol (FTP) transfers and even some streaming media applications.
+TCP is used to guarantee data delivery. The receiving computer's TCP will notify the sender's TCP that each packet was received correctly, and a timer is used to resend data in case of packet loss. Because both the Ethernet and the Internet are two-way data channels, no forward error correction is used because each packet of data can be accounted for.
+For example, when a file is transmitted via FTP, the entire file is handed off to TCP, where it divides the file into segments that, in turn, are the payload of the IP packets. TCP also includes the port numbers for the packet header. Port numbers tell a computer what sort of service this data is associated with, e.g. an e-mail, FTP, HTTP or Network Time Protocol. Ports allow a program to only see data intended for it.
+The Internet Protocol (IP) partencapsulates these segments into an IP packet and adds a header with the destination and source IP address as well as other information about the packet This IP packet is then encapsulated into an Ethernet frame, which includes the MAC address of both the source and destination, for transport over the local Ethernet network. Then this Ethernet frame is sent to the network interface card, and the data is sent over Cat 5 cabling. (See Figure 3.)
+Learning more
+For more information on computer networks, sign up for Broadcast Engineering's "IT Fundamentals" webinar at www.broadcastengineering.com.
+AuthorAffiliation Russell Brown is chief engineer at KMTP-TV in San Francisco and writer of Broadcast Engineering's "Transition to Digital" e-newsletter.
+
+Subject: Computer networks; IPTV; Digital broadcasting; Data transmission
+
+Title: COMPUTER NETWORKS
+
+Publication title: Broadcast Engineering,   World edition
+
+Volume: 52
+
+Issue: 1
+
+Pages: 46-49
+
+Number of pages: 4
+
+Publication year: 2010
+
+Publication date: Jan 2010
+
+Year: 2010
+
+Publisher: Penton Business Media, Inc. and Penton Media Inc.
+
+Place of publication: Overland Park
+
+Country of publication: United States
+
+Publication subject: Communications--Telephone And Telegraph
+
+ISSN: 15295052
+
+Source type: Trade Journals
+
+Language of publication: English
+
+Document type: Feature
+
+Document feature: Charts Illustrations
+
+ProQuest document ID: 218638525
+
+Document URL: http://search.proquest.com/docview/218638525?accountid=27313
+
+Copyright: Copyright Penton Media, Inc. Jan 2010
+
+Last updated: 2012-07-05
+
+Database: ProQuest Science Journals,ABI/INFORM Complete
+
+____________________________________________________________
+
+Contact us at: http://www.proquest.com/go/contactsupport
+Copyright © 2013 ProQuest LLC. All rights reserved.
+Terms and Conditions: http://search.proquest.com/info/termsAndConditions
