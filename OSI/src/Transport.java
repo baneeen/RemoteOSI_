@@ -8,8 +8,9 @@
 
 
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -22,6 +23,9 @@ public class Transport {
 	
 	
 	//providing a service to upper layer
+	Transport( ){
+		
+	}
 	Transport(byte[] data ){
 		this.data=data;
 	}
@@ -45,26 +49,56 @@ public class Transport {
 	 * In : data to be segmented
 	 * Out : segment to packeted ( to Network)
 	 */
-	public List<ArrayList<byte[]>> serveLower(byte[] data ){
-
+	public List<ArrayList<byte[]>> serveLower(FileInputStream data ){
+		
+		
+			
+		
 		
 		//1-  break data to segments
 		List<byte[]> chunk = new ArrayList<byte[]>(); 
 		
+		
+		
+		// Define number of segments
 		int start = 0;
-	    while (start < data.length) {
-	        int end = Math.min(data.length, start + mss);
-	        chunk.add(Arrays.copyOfRange(data, start, end));
-	        start += mss;
+		int end = 0;
+		double size =0;
+		try {
+			size =(double)data.getChannel().size();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		end = (int)Math.ceil(size/mss);
+		
+		
+		// break segments
+		while (start < end ) {
+	   	       
+	        byte[]b=new byte[mss];
+	        System.out.println("chunk"+start);
+	        
+	        try {
+	        	data.read(b);
+	        } catch (IOException e) {
+	        	e.printStackTrace();
+	        }
+
+	        chunk.add(b);
+	        start += 1;
 	    }
 	    
+		
 	    //2- construct the TCP header
-	    List<ArrayList<byte[]>> segment = new ArrayList<ArrayList<byte[]>>(); 
+	    ArrayList<ArrayList<byte[]>> segment = new ArrayList<ArrayList<byte[]>>(); 
 	    start =0;
 	    int index1=0;
 	    int index2=1;
+	   
 	    while (start < chunk.size()) {
-	    	segNO= (""+start).getBytes();	    			    	
+	    	
+	    	segment.add(new ArrayList<byte[]>());
+	    	segNO= (""+start).getBytes();
 	    	segment.get(start).add(index1,segNO);
 	    	segment.get(start).add(index2,chunk.get(start));
 	        start += 1;
