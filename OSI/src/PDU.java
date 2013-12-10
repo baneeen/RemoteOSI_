@@ -1,8 +1,11 @@
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.CRC32;
+import java.util.zip.Checksum;
 
 /*
  *This class is responsible for: 
@@ -116,13 +119,13 @@ public class PDU {
 	}
 
 	
-	/* This function do :
+	/** This function do :
 	 * 1- break data to segments using MSS as size of segment
 	 * 2- construct the TCP header 
 	 * 3- send each segment to lower layer
 	 * 
-	 * In : data to be segmented (file name)
-	 * Out : segment to be packeted ( to Network)
+	 * @param : data to be segmented (file name)
+	 * @return : segment to be packeted ( to Network)
 	 */
 	public PDU[] tarnsportToLower(){
 		
@@ -141,6 +144,13 @@ public class PDU {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
+		// close channel 
+		try {
+			data.close();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		
 		end = (int)Math.ceil(size/mss);
 		
 		
@@ -179,13 +189,13 @@ public class PDU {
 		return segment;
 	}
 	
-	/* This function do :
+	/** This function do :
 	 * 1- Received each segment from Transport layer 
 	 * 2- Encapsulate each segment with IP header
 	 * 3- send each packet to lower layer
 	 * 
-	 * In : source address, destination address
-	 * Out : packets to be framed (to MAC)
+	 * @param source address, destination address
+	 * @return  packets to be framed (to MAC)
 	 */
 	public PDU[] networkToLower(byte[] sc, byte[] des ){
 		
@@ -213,6 +223,14 @@ public class PDU {
 		return packet;
 	}
 	
+	/** This function do :
+	 * 1- Received each packet from Network layer 
+	 * 2- Encapsulate each packet with Ethernet header
+	 * 3- send each frame to lower layer
+	 * 
+	 * @param source MAC, destination MAC
+	 * @return  frame to be encoded (to Physical)
+	 */
 	public PDU[] macToLower(byte[] sc, byte[] des ){
 		
 		byte[] scAdd=("10.10.20.1").getBytes();
@@ -222,6 +240,7 @@ public class PDU {
 		PDU[] frame =networkToLower(scAdd,desAdd);
 		int len=frame.length; 
 		byte[] pre =("10101010").getBytes();
+		
 
 		for(int i=0;i<len;i++)
 		{
@@ -233,12 +252,125 @@ public class PDU {
 			
 			// set the destination MAC address
 			frame[i].setDesMAC(des);
+			
+			
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+			
+			try {
+				outputStream.write(frame[i].getPreamble());
+				outputStream.write(frame[i].getScMAC());
+				outputStream.write(frame[i].getDesMAC());
+				outputStream.write(frame[i].getIden());
+				outputStream.write(frame[i].getOff());
+				outputStream.write(frame[i].getScAdd());
+				outputStream.write(frame[i].getDesAdd());
+				outputStream.write(frame[i].getSegNO());
+				
+			} catch (IOException e) {
+
+				e.printStackTrace();
+			}
+			
+			// set checksum
+			byte[] header =outputStream.toByteArray( );
+			long checksum=calculateChecksum(header);
+			frame[i].setChecksum((checksum+"").getBytes());
+			
+			// set CRC-32
+			try {
+				outputStream.write(frame[i].getChecksum());
+				outputStream.write(frame[i].getData());				
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			byte[] frameData =outputStream.toByteArray( );
+			long crc=calculateCRC(frameData);
+			frame[i].setCrc((crc+"").getBytes());
+			
 		}
 
 		return frame;
 	}
 	
+
+	/** this method for calculate CRC ( for entire frame)
+	 * the code source :
+	 * http://www.java-examples.com/generate-crc32-checksum-byte-array-example	
+	 * 
+	 * @param buf ( header data)
+	 * @return CRC
+	 */
+	public long calculateCRC(byte[] buf) {
 	
+		Checksum crc = new CRC32();
+		
+		// update buff for Checksum method
+		crc.update(buf,0,buf.length);
+		
+		
+		long lngCRC = crc.getValue();
+		
+		return lngCRC;
+	}
+	
+	
+
+	/** this method for create checksum ( for the header)
+	 * the code source :
+	 * http://pastebin.com/fKkAvvrS	
+	 * 
+	 * @param buf ( header data)
+	 * @return checksum 
+	 */
+	public long calculateChecksum(byte[] buf) {
+	    int length = buf.length;
+	    int i = 0;
+	 
+	    long sum = 0;
+	    long data;
+	 
+	    // Handle all pairs
+	    while (length > 1) {
+	      // Corrected to include @Andy's edits and various comments on Stack Overflow
+	      data = (((buf[i] << 8) & 0xFF00) | ((buf[i + 1]) & 0xFF));
+	      sum += data;
+	      // 1's complement carry bit correction in 16-bits (detecting sign extension)
+	      if ((sum & 0xFFFF0000) > 0) {
+	        sum = sum & 0xFFFF;
+	        sum += 1;
+	      }
+	 
+	      i += 2;
+	      length -= 2;
+	    }
+	 
+	    // Handle remaining byte in odd length buffers
+	    if (length > 0) {
+	      // Corrected to include @Andy's edits and various comments on Stack Overflow
+	      sum += (buf[i] << 8 & 0xFF00);
+	      // 1's complement carry bit correction in 16-bits (detecting sign extension)
+	      if ((sum & 0xFFFF0000) > 0) {
+	        sum = sum & 0xFFFF;
+	        sum += 1;
+	      }
+	    }
+	 
+	    // Final 1's complement value correction to 16-bits
+	    sum = ~sum;
+	    sum = sum & 0xFFFF;
+	    return sum;
+	 
+	  }
+	 
+
+	       	
+	
+	
+/** this method for open file to extract data ( in transport)
+ * 	
+ * @param fileName as string
+ * @return FilInputStream
+ */
 	public  FileInputStream openFile(String fileName){
 		
 		FileInputStream data = null;
