@@ -3,6 +3,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
@@ -292,6 +293,54 @@ public class PDU {
 		return frame;
 	}
 	
+	/** This function do :
+	 * 1- Received each frame from MAC layer 
+	 * 2- transform frame to bits array
+	 * 3- send each frame to lower layer
+	 * 
+	 * @param 
+	 * @return  bits  (to be sent)
+	 */
+	 public BitSet[] physicalToLower()
+	 {
+			byte[] scMAC=("eth0").getBytes();
+			byte[] desMAC=("eth1").getBytes();
+			
+			PDU[] frame =macToLower(scMAC,desMAC);
+			
+			int len = frame.length;
+			BitSet bits[] =new BitSet[len];
+			for(int i=0;i<len;i++)
+			{
+		
+				ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+				
+				try {
+					outputStream.write(frame[i].getPreamble());
+					outputStream.write(frame[i].getScMAC());
+					outputStream.write(frame[i].getDesMAC());
+					outputStream.write(frame[i].getIden());
+					outputStream.write(frame[i].getOff());
+					outputStream.write(frame[i].getScAdd());
+					outputStream.write(frame[i].getDesAdd());
+					outputStream.write(frame[i].getSegNO());
+					outputStream.write(frame[i].getChecksum());
+					outputStream.write(frame[i].getData());	
+					outputStream.write(frame[i].getCrc());	
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				 byte[] frameData =outputStream.toByteArray( );
+				
+			bits[i]=BitSet.valueOf(frameData);
+			}
+			
+		return bits;
+		 
+	 }
+	
+	
+	
 
 	/** this method for calculate CRC ( for entire frame)
 	 * the code source :
@@ -312,6 +361,8 @@ public class PDU {
 		
 		return lngCRC;
 	}
+	
+	
 	
 	
 
