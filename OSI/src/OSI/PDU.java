@@ -330,8 +330,49 @@ public class PDU {
 		return bits;
 		 
 	 }
+	 /** This function do :
+		 * 1- Received each bit set from network medium
+		 * 2- transform bit set to byte array
+		 * 3- send each byte array to upper layer (MAC Layer)
+		 * 
+		 * @param bits  (to be received)
+		 * @return  byte array
+		 */
+		/* public byte[] physicalToUpper(BitSet[] bits)
+		 {
+				
+				int len = bits.length;
+				BitSet bits[] =new BitSet[len];
+				for(int i=0;i<len;i++)
+				{
+			
+					ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+					
+					try {
+						outputStream.write(frame[i].getPreamble());
+						outputStream.write(frame[i].getScMAC());
+						outputStream.write(frame[i].getDesMAC());
+						outputStream.write(frame[i].getIden());
+						outputStream.write(frame[i].getOff());
+						outputStream.write(frame[i].getScAdd());
+						outputStream.write(frame[i].getDesAdd());
+						outputStream.write(frame[i].getSegNO());
+						outputStream.write(frame[i].getChecksum());
+						outputStream.write(frame[i].getData());	
+						outputStream.write(frame[i].getCrc());	
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					 byte[] frameData =outputStream.toByteArray( );
+					
+				bits[i]=BitSet.valueOf(frameData);
+				}
+				
+			return bits;
+			 
+		 }
 	
-	
+	*/
 	
 
 	/** this method for calculate CRC ( for entire frame)

@@ -1,7 +1,4 @@
 package OSI;
-import java.util.BitSet;
-
-import OSI.PDU;
 //============================================================================
 //Team Members:
 //Huang, Weijun 
@@ -18,8 +15,11 @@ public class Main {
 		
 		System.out.println("Welcome");
 		
-		
+		byte[] aScIP=("10.10.20.1").getBytes();
+		byte[] aDesIP=("192.168.25.15").getBytes();
+		Node a =new Node(aScIP,aDesIP);
 			
+		
 		
 		
 		
