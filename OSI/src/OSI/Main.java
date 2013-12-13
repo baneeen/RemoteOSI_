@@ -1,4 +1,7 @@
+package OSI;
+import java.util.BitSet;
 
+import OSI.PDU;
 //============================================================================
 //Team Members:
 //Huang, Weijun 
@@ -8,11 +11,23 @@
 // Project
 // Description: this project is a simplification of OSI Model
 //==========================
+
 public class Main {
 
 	public static void main(String[] args) {
 		
 		System.out.println("Welcome");
+		
+		
+			
+		
+		
+		
+			
+		
+		
+		
+		
 		
 		
 	

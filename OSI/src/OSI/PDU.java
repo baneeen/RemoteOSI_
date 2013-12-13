@@ -1,3 +1,4 @@
+package OSI;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -129,7 +130,7 @@ public class PDU {
 	 * @param : data to be segmented (file name)
 	 * @return : segment to be packeted ( to Network)
 	 */
-	public PDU[] tarnsportToLower(String fileName){
+	public  PDU[] tarnsportToLower(String fileName){
 		
 		
 		FileInputStream data = openFile(fileName);
@@ -146,12 +147,6 @@ public class PDU {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-		// close channel 
-		try {
-			data.close();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
 		
 		end = (int)Math.ceil(size/mss);
 		
@@ -160,7 +155,7 @@ public class PDU {
 		while (start < end ) {
 	   	       
 	        byte[]b=new byte[mss];
-	        System.out.println("chunk"+start);
+	      
 	        
 	        try {
 	        	data.read(b);
@@ -171,7 +166,13 @@ public class PDU {
 	        chunk.add(b);
 	        start += 1;
 	    }
-	    
+		// close channel 
+				try {
+					data.close();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				
 		
 	    //2- construct the TCP header
 		
