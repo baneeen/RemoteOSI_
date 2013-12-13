@@ -31,22 +31,22 @@ import java.util.zip.Checksum;
 
 public class PDU {
 	// TCP Header
-	byte data[];
-	byte segNO[]=new byte[2] ; // segment number -- part of TCP Header
+	private byte data[];
+	private byte segNO[]=new byte[2] ; // segment number -- part of TCP Header
 	
 	// IP Header
-	byte[] iden = new byte[2]; // used for fragmentation if needed
-	byte[] off = new byte[2]; // used for offset fragmentation if needed
+	private byte[] iden = new byte[2]; // used for fragmentation if needed
+	private byte[] off = new byte[2]; // used for offset fragmentation if needed
 	
-	byte[] scAdd= new byte[32]; // source address
-	byte[] desAdd= new byte[32]; // destination address
+	private byte[] scAdd= new byte[32]; // source address
+	private byte[] desAdd= new byte[32]; // destination address
 	
 	// Ethernet Frame
-	byte[] preamble=new byte [7]; // indicate the start of frame
-	byte[] scMAC =new byte[6]; // source MAC address
-	byte[] desMAC =new byte[6]; // destination MAC address
-	byte[] checksum=new byte[2]; // checksum for entire header ( error detection)
-	byte[] crc = new byte[4]; // used for entire frame ( error detection)
+	private byte[] preamble=new byte [7]; // indicate the start of frame
+	private byte[] scMAC =new byte[6]; // source MAC address
+	private byte[] desMAC =new byte[6]; // destination MAC address
+	private byte[] checksum=new byte[2]; // checksum for entire header ( error detection)
+	private byte[] crc = new byte[4]; // used for entire frame ( error detection)
 	
 	
 
@@ -121,16 +121,17 @@ public class PDU {
 
 	
 	/** This function do :
-	 * 1- break data to segments using MSS as size of segment
-	 * 2- construct the TCP header 
-	 * 3- send each segment to lower layer
+	 * 1- setting the 
+	 * 2- break data to segments using MSS as size of segment
+	 * 3- construct the TCP header 
+	 * 4- send each segment to lower layer
 	 * 
 	 * @param : data to be segmented (file name)
 	 * @return : segment to be packeted ( to Network)
 	 */
-	public PDU[] tarnsportToLower(){
+	public PDU[] tarnsportToLower(String fileName){
 		
-		String fileName= "file.txt";
+		
 		FileInputStream data = openFile(fileName);
 		
 		int mss= 1350; // Maximum Segment  
@@ -195,12 +196,11 @@ public class PDU {
 	 * 2- Encapsulate each segment with IP header
 	 * 3- send each packet to lower layer
 	 * 
-	 * @param source address, destination address
+	 * @param source address, destination address, segments from transport
 	 * @return  packets to be framed (to MAC)
 	 */
-	public PDU[] networkToLower(byte[] sc, byte[] des ){
+	public PDU[] networkToLower(byte[] sc, byte[] des,PDU[] packet){
 		
-		PDU[] packet =tarnsportToLower();
 		int len=packet.length; 
 		
 		for(int i=0;i<len;i++)
@@ -229,16 +229,11 @@ public class PDU {
 	 * 2- Encapsulate each packet with Ethernet header
 	 * 3- send each frame to lower layer
 	 * 
-	 * @param source MAC, destination MAC
+	 * @param source MAC, destination MAC, PDU[] packet
 	 * @return  frame to be encoded (to Physical)
 	 */
-	public PDU[] macToLower(byte[] sc, byte[] des ){
-		
-		byte[] scAdd=("10.10.20.1").getBytes();
-		byte[] desAdd=("10.10.20.2").getBytes();
-		
-
-		PDU[] frame =networkToLower(scAdd,desAdd);
+	public PDU[] macToLower(byte[] sc, byte[] des, PDU[] frame ){
+	
 		int len=frame.length; 
 		byte[] pre =("10101010").getBytes();
 		
@@ -298,15 +293,11 @@ public class PDU {
 	 * 2- transform frame to bits array
 	 * 3- send each frame to lower layer
 	 * 
-	 * @param 
+	 * @param PDU[] frame
 	 * @return  bits  (to be sent)
 	 */
-	 public BitSet[] physicalToLower()
+	 public BitSet[] physicalToLower(PDU[] frame)
 	 {
-			byte[] scMAC=("eth0").getBytes();
-			byte[] desMAC=("eth1").getBytes();
-			
-			PDU[] frame =macToLower(scMAC,desMAC);
 			
 			int len = frame.length;
 			BitSet bits[] =new BitSet[len];
