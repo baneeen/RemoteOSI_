@@ -40,18 +40,20 @@ public class Node implements Runnable{
 		// 2- Construct IP header
 		PDU[] packet = data.networkToLower(scAdd, desAdd, segment);
 		// 3- Construct Ethernet header 
-		PDU[] frame= data.macToLower("eth1".getBytes(), "eth0".getBytes(), packet);
+		byte[] scMAC= findMAC(scAdd);
+		byte[] desMAC= findMAC(desAdd);
+		PDU[] frame= data.macToLower(scMAC, desMAC, packet);
 		// 4- transform frame to bits
 		BitSet[] bits=data.physicalToLower(frame);
 		
 		//System.out.println("SEQ-NO:"+new String(segment[i].getSegNO()));
 		//System.out.println("Data:"+new String(segment[i].getData()));
-	    
+	/*    
 	for(int i=0;i<bits.length;i++){
 		System.out.println("Data:"+new String(bits[i].toByteArray()));
 		
 	}
-		
+		*/
 	}
 	public void createRoutingTable(){
 		
@@ -103,5 +105,23 @@ public class Node implements Runnable{
 		   macMapTable[4][0]=("192.168.25.15").getBytes();
 		   macMapTable[4][1]=("00B0C7").getBytes();	      
 	}
+public byte[] findMAC(byte[] ip){
+	
+	int ipIndex=0;
+	int macIndex=1;
+	
+	for(int i=0;i<ipNum;i++)
+	{
+		
+		if (new String(macMapTable[i][ipIndex]).equals(new String(ip)))
+		{
+	
+		
+			return macMapTable[i][macIndex];
+			
+		}
+	}
 
+	return "0000".getBytes();
+}
 }
