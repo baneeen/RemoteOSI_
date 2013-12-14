@@ -2,9 +2,10 @@ package OSI;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.List;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
@@ -121,11 +122,10 @@ public class PDU {
 	}
 
 	
-	/** This function do :
-	 * 1- setting the 
-	 * 2- break data to segments using MSS as size of segment
-	 * 3- construct the TCP header 
-	 * 4- send each segment to lower layer
+	/** This function do : 
+	 * 1- break data to segments using MSS as size of segment
+	 * 2- construct the TCP header 
+	 * 3- send each segment to lower layer
 	 * 
 	 * @param : data to be segmented (file name)
 	 * @return : segment to be packeted ( to Network)
@@ -191,77 +191,142 @@ public class PDU {
 	//3- send segment array
 		return segment;
 	}
+
+	/** This function do :
+	 * -- take PDU[] 
+	 * -- Write the data in file
+	 * @param : file name , PDU []
+	 * @return : -
+	 */
+	public  void tarnsportToUpper(String fileName,PDU[] segment){
+		
+		//create or overwritten file
+		FileOutputStream out = null;
+		try {
+			out = new FileOutputStream(fileName);
+		} catch (FileNotFoundException e) {	
+			e.printStackTrace();
+		}
+		
+		//write data
+		for(int i=0;i< segment.length;i++)
+		{
+			try {
+				out.write(segment[i].getData());
+			} catch (IOException e) {
 	
+				e.printStackTrace();
+			}
+		}
+		
+		// close channel
+		try {
+			out.close();
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		}
+		
+	}
 	/** This function do :
 	 * 1- Received each segment from Transport layer 
 	 * 2- Encapsulate each segment with IP header
 	 * 3- send each packet to lower layer
 	 * 
-	 * @param source address, destination address, segments from transport
+	 * @param source address, destination address, segment from transport
 	 * @return  packets to be framed (to MAC)
 	 */
-	public PDU[] networkToLower(byte[] sc, byte[] des,PDU[] packet){
+	public PDU networkToLower(byte[] sc, byte[] des,PDU packet){
 		
-		int len=packet.length; 
 		
-		for(int i=0;i<len;i++)
-		{
 			// set Identification to default value
 			byte[] iden=("0").getBytes();
-			packet[i].setIden(iden);
+			packet.setIden(iden);
 			
 			// set fragmentation offset to default value 
 			byte[] offest=("0").getBytes();
-			packet[i].setOff(offest);
+			packet.setOff(offest);
 			
 			// set source address from table in the thread
-			packet[i].setScAdd(sc);
+			packet.setScAdd(sc);
 			
 			// set destination address from table in the thread
-			packet[i].setScAdd(des);
+			packet.setScAdd(des);
 	
-		}
+		
 		
 		return packet;
 	}
-	
+	/** This function do :
+	 * 1- determine if the destination for received packet is the node itself 
+	 * 2- otherwise, if it is the destination within the network put it in the wire
+	 * 3- otherwise, send it to the router as exchanger
+	 * 
+	 * @param nodeIP,scMask, desMask , PDU packet
+	 * @return  flag ( 1: destination is itself, 2:destination within network, 3:destination on other network)
+	 */
+	public int networkToUpper(byte[] nodeIP,byte[] scMask, byte[] desMask,PDU packet){
+		
+		    int flag=0;
+		    byte[] desIP=packet.getDesAdd();
+		    String strDesIP = new String(desIP);
+		    String strNodeIP =new String(nodeIP);
+		    
+		    // is this the destination ?
+		    if ( strNodeIP.equals(strDesIP)){
+		    	flag=1;
+		    	return flag;
+		    }
+		    
+		    String desNetwork =getNeworkNumber(desIP, desMask);
+		    String nodeNetwork =getNeworkNumber(desIP, desMask);
+			
+		    // is this within the LAN
+		    if ( desNetwork.equals(nodeNetwork)){
+		    	flag=2;
+		    	return flag;
+		    } 
+			
+		    // pass to router interface
+			flag=3;
+		return flag;
+	}
 	/** This function do :
 	 * 1- Received each packet from Network layer 
 	 * 2- Encapsulate each packet with Ethernet header
 	 * 3- send each frame to lower layer
 	 * 
-	 * @param source MAC, destination MAC, PDU[] packet
-	 * @return  frame to be encoded (to Physical)
+	 * @param source MAC, destination MAC, PDU packet
+	 * @return  frame to be sent (to network medium)
 	 */
-	public PDU[] macToLower(byte[] sc, byte[] des, PDU[] frame ){
+	public PDU macToLower(byte[] sc, byte[] des, PDU frame ){
 	
-		int len=frame.length; 
+		
 		byte[] pre =("10101010").getBytes();
 		
 
-		for(int i=0;i<len;i++)
-		{
+		
 			// fixed pattern to indicate the start of frame
-			frame[i].setPreamble(pre);
+			frame.setPreamble(pre);
 			
 			// set the source MAC address
-			frame[i].setScMAC(sc);
+			frame.setScMAC(sc);
 			
 			// set the destination MAC address
-			frame[i].setDesMAC(des);
+			frame.setDesMAC(des);
 			
 			
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
 			
 			try {
-				outputStream.write(frame[i].getPreamble());
-				outputStream.write(frame[i].getScMAC());
-				outputStream.write(frame[i].getDesMAC());
-				outputStream.write(frame[i].getIden());
-				outputStream.write(frame[i].getOff());
-				outputStream.write(frame[i].getScAdd());
-				outputStream.write(frame[i].getDesAdd());
-				outputStream.write(frame[i].getSegNO());
+				outputStream.write(frame.getPreamble());
+				outputStream.write(frame.getScMAC());
+				outputStream.write(frame.getDesMAC());
+				outputStream.write(frame.getIden());
+				outputStream.write(frame.getOff());
+				outputStream.write(frame.getScAdd());
+				outputStream.write(frame.getDesAdd());
+				outputStream.write(frame.getSegNO());
 				
 			} catch (IOException e) {
 
@@ -271,109 +336,109 @@ public class PDU {
 			// set checksum
 			byte[] header =outputStream.toByteArray( );
 			long checksum=calculateChecksum(header);
-			frame[i].setChecksum((checksum+"").getBytes());
+			frame.setChecksum((checksum+"").getBytes());
 			
 			// set CRC-32
 			try {
-				outputStream.write(frame[i].getChecksum());
-				outputStream.write(frame[i].getData());				
+				outputStream.write(frame.getChecksum());
+				outputStream.write(frame.getData());				
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 			byte[] frameData =outputStream.toByteArray( );
 			long crc=calculateCRC(frameData);
-			frame[i].setCrc((crc+"").getBytes());
+			frame.setCrc((crc+"").getBytes());
 			
-		}
+	
 
 		return frame;
 	}
-	
 	/** This function do :
-	 * 1- Received each frame from MAC layer 
-	 * 2- transform frame to bits array
-	 * 3- send each frame to lower layer
+	 * 1- Extract Ethernet Header
+	 * 2- Check Correctness of the frame through CRC, and the header through checksum
+	 * 3- If it is correct pass to upper, otherwise send negative flag (dropping form the network)
 	 * 
-	 * @param PDU[] frame
-	 * @return  bits  (to be sent)
+	 * @param PDU frame
+	 * @return  flag ( 1 for correct or -1 for corrupted header or frame
 	 */
-	 public BitSet[] physicalToLower(PDU[] frame)
-	 {
-			
-			int len = frame.length;
-			BitSet bits[] =new BitSet[len];
-			for(int i=0;i<len;i++)
-			{
+	public int macToUpper(PDU frame ){
+           int flag=0;
+
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+
+		try {
+			outputStream.write(frame.getPreamble());
+			outputStream.write(frame.getScMAC());
+			outputStream.write(frame.getDesMAC());
+			outputStream.write(frame.getIden());
+			outputStream.write(frame.getOff());
+			outputStream.write(frame.getScAdd());
+			outputStream.write(frame.getDesAdd());
+			outputStream.write(frame.getSegNO());
+
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		}
 		
-				ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
-				
-				try {
-					outputStream.write(frame[i].getPreamble());
-					outputStream.write(frame[i].getScMAC());
-					outputStream.write(frame[i].getDesMAC());
-					outputStream.write(frame[i].getIden());
-					outputStream.write(frame[i].getOff());
-					outputStream.write(frame[i].getScAdd());
-					outputStream.write(frame[i].getDesAdd());
-					outputStream.write(frame[i].getSegNO());
-					outputStream.write(frame[i].getChecksum());
-					outputStream.write(frame[i].getData());	
-					outputStream.write(frame[i].getCrc());	
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				 byte[] frameData =outputStream.toByteArray( );
-				
-			bits[i]=BitSet.valueOf(frameData);
+			
+			// check checksum
+			byte[] header =outputStream.toByteArray( );
+			long checksum=calculateChecksum(header);
+			long currentChecksum= Long.parseLong(new String(frame.getChecksum()));
+			
+			// dropping frame from network if not correct
+			if (checksum != currentChecksum){
+				flag=-1;
+			    return flag;
 			}
 			
-		return bits;
-		 
-	 }
-	 /** This function do :
-		 * 1- Received each bit set from network medium
-		 * 2- transform bit set to byte array
-		 * 3- send each byte array to upper layer (MAC Layer)
-		 * 
-		 * @param bits  (to be received)
-		 * @return  byte array
-		 */
-		/* public byte[] physicalToUpper(BitSet[] bits)
-		 {
-				
-				int len = bits.length;
-				BitSet bits[] =new BitSet[len];
-				for(int i=0;i<len;i++)
-				{
 			
-					ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
-					
-					try {
-						outputStream.write(frame[i].getPreamble());
-						outputStream.write(frame[i].getScMAC());
-						outputStream.write(frame[i].getDesMAC());
-						outputStream.write(frame[i].getIden());
-						outputStream.write(frame[i].getOff());
-						outputStream.write(frame[i].getScAdd());
-						outputStream.write(frame[i].getDesAdd());
-						outputStream.write(frame[i].getSegNO());
-						outputStream.write(frame[i].getChecksum());
-						outputStream.write(frame[i].getData());	
-						outputStream.write(frame[i].getCrc());	
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					 byte[] frameData =outputStream.toByteArray( );
-					
-				bits[i]=BitSet.valueOf(frameData);
-				}
-				
-			return bits;
-			 
-		 }
+			// check CRC-32
+			try {
+				outputStream.write(frame.getChecksum());
+				outputStream.write(frame.getData());				
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			byte[] frameData =outputStream.toByteArray( );
+			
+			long crc=calculateCRC(frameData);
+            long currentCRC= Long.parseLong(new String(frame.getCrc()));
+			
+			// dropping frame from network if not correct
+			if (crc != currentCRC){
+				flag=-1;
+			    return flag;
+			}
+			
+			flag=1;
 	
-	*/
+
+		return flag;
+	}
 	
+	/** this method for extract the network number
+	 * 
+	 * @param ip, mask
+	 * @return network number
+	 */
+    
+    public String getNeworkNumber(byte[] ip, byte[] mask){   
+    	
+    String strIP= new String(ip);
+	String strMask = new String (mask);	
+	
+	String [] ipField = strIP.split("\\.");
+	String [] maskField = strMask.split("\\.");
+    int[] network = new int[4];
+    for(int i=0;i<network.length;i++)
+           network[i]=(Integer.parseInt(ipField[i])) & (Integer.parseInt(maskField[0]));
+    
+    String strNetwork = network[0]+"."+network[1]+"."+network[2]+"."+network[3];
+    
+    return strNetwork;
+    }
 
 	/** this method for calculate CRC ( for entire frame)
 	 * the code source :

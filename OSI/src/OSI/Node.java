@@ -1,6 +1,7 @@
 package OSI;
 
-import java.util.BitSet;
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  *This class is responsible for: 
@@ -18,6 +19,8 @@ public class Node implements Runnable{
 	
 	private byte[][][] routingTable=new byte[ipNum][ipSize][ipField];
 	private byte[][][] macMapTable=new byte[ipNum][ipSize][macField];
+	
+	private String signal=null;
 
 	
 	public Node(byte[] scAdd,byte[] desAdd) {
@@ -27,6 +30,7 @@ public class Node implements Runnable{
 
 		createRoutingTable();
 		createMacMapping();
+		signal="Ende of File";
      }
 	
 	@Override
@@ -35,25 +39,98 @@ public class Node implements Runnable{
 		
 		String fileName="file.txt";
 		PDU data =new PDU();
-		// 1- break file into segments + Construct TCP header
-		PDU[] segment=data.tarnsportToLower(fileName);
+		// break file into segments + Construct TCP header
+		PDU[] pdu=data.tarnsportToLower(fileName);
+		
+		for (int i=0;i< pdu.length ;i++){
+		
+		// 1- construct TCP header
+		System.out.println("-----------------------------------");
+		System.out.println("Node IP: "+scAdd+"is sending");
+		System.out.println("SEQ-NO:"+new String(pdu[i].getSegNO()));
+		
 		// 2- Construct IP header
-		PDU[] packet = data.networkToLower(scAdd, desAdd, segment);
+		PDU packet = data.networkToLower(scAdd, desAdd, pdu[i]);
+		System.out.println("Identfication:"+new String(packet.getIden()));
+		System.out.println("Offest:"+new String(packet.getOff()));
+		System.out.println("Source Address:"+new String(packet.getScAdd()));
+		System.out.println("Destination Address:"+new String(packet.getDesAdd()));
+		
 		// 3- Construct Ethernet header 
 		byte[] scMAC= findMAC(scAdd);
 		byte[] desMAC= findMAC(desAdd);
-		PDU[] frame= data.macToLower(scMAC, desMAC, packet);
-		// 4- transform frame to bits
-		BitSet[] bits=data.physicalToLower(frame);
+		PDU frame= data.macToLower(scMAC, desMAC, packet);
+		System.out.println("Preamble:"+new String(frame.getPreamble()));
+		System.out.println("Source MAC:"+new String(frame.getScMAC()));
+		System.out.println("Destination MAC:"+new String(frame.getDesMAC()));
+		System.out.println("Checksum:"+frame.getChecksum());
+		System.out.println("CRC:"+frame.getCrc());
 		
-		//System.out.println("SEQ-NO:"+new String(segment[i].getSegNO()));
-		//System.out.println("Data:"+new String(segment[i].getData()));
-	/*    
-	for(int i=0;i<bits.length;i++){
-		System.out.println("Data:"+new String(bits[i].toByteArray()));
+		
+		// 4- send frame to the network medium
+		
+		
+		}
+		List <PDU> arryPDU =new ArrayList<PDU>();
+		while (true){
+		
+	    System.out.println("-----------------------------------");
+	    //1- take PDU from the network 
+	    PDU pdu1 = null;
+	    System.out.println("Node IP: "+scAdd+"is receiving");
+
+	    // 2- check correctness of frame
+	    System.out.println("FN:Checking the correctness of the frame..");
+	    int flag=data.macToUpper(pdu1);
+	    int correct =1;
+	    if ( flag!=correct){
+	    	System.out.println("FN-R:Corrupted!The frame is dropped from the netwrok..");
+	    	continue;
+	    } 
+	    System.out.println("FN-R:The frame is not Corrupted ");
+	    
+		System.out.println("Preamble:"+new String(pdu1.getPreamble()));
+		System.out.println("Source MAC:"+new String(pdu1.getScMAC()));
+		System.out.println("Destination MAC:"+new String(pdu1.getDesMAC()));
+		System.out.println("Checksum:"+pdu1.getChecksum());
+		System.out.println("CRC:"+pdu1.getCrc());
+	
+	    	
+	    //3- check network range
+	    
+	    byte[] scMask=findMask(scAdd);
+	    byte[] desMask=findMask(pdu1.getDesAdd());
+	    int myNode=1;
+	    int lanNodes=2;
+	    int otherNetwork=3;
+	    
+	    System.out.println("FN:Checking the network range of the frame's destination..");
+	    flag= data.networkToUpper(scAdd, scMask, desMask, pdu1);
+	    
+	    if(flag ==myNode)
+	    {
+	    	arryPDU.add(pdu1);
+		    System.out.println("FN-R:The frame is for the current node ");
+		    
+	    }else if (flag==lanNodes){
+	    	
+	    	System.out.println("FN-R:The frame is for the other node in the LAN");
+	    	// put in the queue
+	    }else {
+	    	System.out.println("FN-R:The frame is for other network ");
+	    	// pass to router
+	    }
+	 
+		}
 		
 	}
-		*/
+	public byte[] findMask(byte[] ip){
+		byte[] mask=null;
+		for (int i=0;i< routingTable.length;i++)
+			if( routingTable[i][0].equals(ip))
+				mask= routingTable[i][1];
+		return mask;
+		
 	}
 	public void createRoutingTable(){
 		
